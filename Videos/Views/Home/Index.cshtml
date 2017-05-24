@@ -1,0 +1,85 @@
+﻿@using System.Web.Http.Routing
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div id="videoTableOutput">
+
+</div>
+
+<div id="videoEditOutput">
+</div>
+
+
+<script id="videoTable" type="text/html">
+    <table>
+        <thead>
+        <th>Title</th>
+        <th>Length</th>
+        <th></th>
+        </thead>
+        <tbody>
+        {{#each video}}
+        <tr data-id={{Id}}>
+            <td>{{Title}}</td>
+            <td>{{Length}}</td>
+            <td>
+                <button class="editVideo">Edit</button>                
+                <button class="deleteVideo">Delete</button>
+            </td>
+        </tr>
+        {{/each}}
+        </tbody>
+    </table>
+</script>
+
+
+@section scripts {
+    <script src="~/Scripts/handlebars.js"></script>
+
+    <script>
+        var videoServer = (function() {
+            var videoApiUrl = '@Url.RouteUrl("DefaultApi", new {HttpRoute = "", Controller = "Videos"})';
+
+            //Error Handlying code
+            $(document).ajaxError(function(event, xhr) {
+                alert(xhr.status + ":" + xhr.statusText);
+            });
+
+            var getVideos = function() {
+                return $.ajax(videoApiUrl);
+            }
+
+            // Revealing module pattern - public object
+            return {
+                getVideos: getVideos
+            }
+
+        }());
+
+        (function() {
+
+            var templates = {};
+
+            var compiledTemplates = function() {
+                templates.videoTable = Handlebars.compile($("#videoTable").html());
+            }
+
+            //Show all
+            var showAllVideos = function(data) {
+                var output = templates.videoTable({ video: data });
+                $("#videoTableOutput").html(output);
+            }
+
+            var refreshVideos = function() {
+                videoServer.getVideos().done(showAllVideos);
+            }
+
+            $(function() {
+                compiledTemplates();
+                refreshVideos();
+            });
+
+        }());
+    </script>
+}
