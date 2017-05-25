@@ -1,7 +1,9 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
 using Videos.Models;
@@ -39,37 +41,21 @@ namespace Videos.Controllers
 
         // PUT: api/Videos/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult PutVideo(int id, Video video)
+        public HttpResponseMessage PutVideo(int id, Video video)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != video.Id)
-            {
-                return BadRequest();
-            }
-
-            db.Entry(video).State = EntityState.Modified;
+            if (!ModelState.IsValid || id != video.Id)
+                return Request.CreateResponse(HttpStatusCode.BadRequest);        
 
             try
             {
+                db.Entry(video).State = EntityState.Modified;
                 db.SaveChanges();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!VideoExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return Request.CreateResponse(HttpStatusCode.NotFound);
             }
-
-            return StatusCode(HttpStatusCode.NoContent);
+            return Request.CreateResponse(HttpStatusCode.OK, video);
         }
 
         // POST: api/Videos
