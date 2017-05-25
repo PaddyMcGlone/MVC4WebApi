@@ -33,13 +33,25 @@
     </table>
 </script>
 
+<script id="videoEdit" type="text/html">
+    <hr />
+    <form>
+        <input type="hidden" name="id" id="id" value="{{Id}}" />
+        <label for="title">Title:</label>
+        <input type="text" name="Title" id="title" required value="{{Title}}"/>
+        <label for="length">Length</label>
+        <input type="number" min="0" max="200" name="length" id="length" value="{{Length}}"/>
+        <input type="submit" id="saveVideo"/>
+    </form>
+</script>
+
 
 @section scripts {
     <script src="~/Scripts/handlebars.js"></script>
 
     <script>
         var videoServer = (function() {
-            var videoApiUrl = '@Url.RouteUrl("DefaultApi", new {HttpRoute = "", Controller = "Videos"})';
+            var videoApiUrl = '@Url.RouteUrl("DefaultApi", new {HttpRoute = "", Controller = "videos"})';
 
             //Error Handlying code
             $(document).ajaxError(function(event, xhr) {
@@ -48,12 +60,26 @@
 
             var getVideos = function() {
                 return $.ajax(videoApiUrl);
-            }
+            };
+
+            var getVideo = function(id) {
+                return $.ajax(videoApiUrl + "/" + id);
+            };
+
+            var putVideos = function(video) {
+                return $.ajax(videoApiUrl + "/" + video.Id,
+                    {
+                        type: "PUT",
+                        data: video
+                    });
+            };
 
             // Revealing module pattern - public object
             return {
-                getVideos: getVideos
-            }
+                getVideos: getVideos,
+                getVideo: getVideo,
+                putVideos: putVideos
+            };
 
         }());
 
@@ -63,19 +89,59 @@
 
             var compiledTemplates = function() {
                 templates.videoTable = Handlebars.compile($("#videoTable").html());
+                templates.videoEdit = Handlebars.compile($("#videoEdit").html());
             }
 
-            //Show all
             var showAllVideos = function(data) {
                 var output = templates.videoTable({ video: data });
                 $("#videoTableOutput").html(output);
+            }
+
+            var showVideoForEdit = function(video) {
+                var output = templates.videoEdit(video);
+                $("#videoEditOutput").html(output);
+            }
+
+            var editVideo = function() {
+                var id = getId(this);
+                videoServer.getVideo(id).done(showVideoForEdit);
             }
 
             var refreshVideos = function() {
                 videoServer.getVideos().done(showAllVideos);
             }
 
-            $(function() {
+            var getId = function(element) {
+                return $(element).parents("tr").attr("data-id");
+            }
+
+            var clearEdit = function() {
+                $("videoEdit").empty();
+            }
+
+            var saveVideo = function() {
+                var video = {
+                    "Id": $("#id").val(),
+                    "Title": $("#title").val(),
+                    "Length": $("#length").val()
+                }
+
+                var operation;
+                if (video.Id != "0") {
+                    operation = videoServer.putVideos(video);
+                }
+                operation.done(refreshVideos, clearEdit);
+                return false;
+            }
+
+            var wireEvent = function() {
+                $(document).on("click", ".editVideo", editVideo);
+                $(document).on("click", "#saveVideo", saveVideo);
+
+            }
+
+            $(function () {
+                wireEvent();
                 compiledTemplates();
                 refreshVideos();
             });
