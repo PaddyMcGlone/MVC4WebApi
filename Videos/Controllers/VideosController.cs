@@ -48,6 +48,7 @@ namespace Videos.Controllers
 
             try
             {
+                // EF - mark entity as modified, changes applied on top
                 db.Entry(video).State = EntityState.Modified;
                 db.SaveChanges();
             }
