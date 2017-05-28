@@ -40,6 +40,7 @@ namespace Videos.Controllers
         }
 
         // PUT: api/Videos/5
+        // Method returns a http response message back to the client
         [ResponseType(typeof(void))]
         public HttpResponseMessage PutVideo(int id, Video video)
         {
@@ -49,10 +50,13 @@ namespace Videos.Controllers
             try
             {
                 // EF - mark entity as modified, changes applied on top
+                //db.entry - retrieves a given entry on a entity
+                //We then mark the state as modified, so entity framework 
+                //can automatically update the entity.
                 db.Entry(video).State = EntityState.Modified;
-                db.SaveChanges();
+                db.SaveChanges(); //Then save these changes
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException) // Exception when no rows in the db were updated.
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound);
             }
