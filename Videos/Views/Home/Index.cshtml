@@ -80,11 +80,16 @@
                 getVideo: getVideo,
                 putVideos: putVideos
             };
-
+                
         }());
 
         (function() {
-
+            /*
+             So the way to remember HandleBars.js is we ajax and WebApi to retrieve our data
+            from the server. Once the server has returned the required data, we then use handlebars.js to
+            quickly build some nice html using an almost placeholderr script, we then create this html in a buffer
+            and output it onto the view. We then have some nice javascript listening for actions and reacting to this actions.
+             */
             var templates = {};
 
             var compiledTemplates = function() {
