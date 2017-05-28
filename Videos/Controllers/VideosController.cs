@@ -65,17 +65,17 @@ namespace Videos.Controllers
 
         // POST: api/Videos
         [ResponseType(typeof(Video))]
-        public IHttpActionResult PostVideo(Video video)
+        public HttpResponseMessage PostVideo(Video video)
         {
             if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+                return Request.CreateResponse(HttpStatusCode.BadRequest);
 
             db.Videos.Add(video);
             db.SaveChanges();
 
-            return CreatedAtRoute("DefaultApi", new { id = video.Id }, video);
+            HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.Created, video);
+            response.Headers.Location = new Uri(Url.Link("DefaultApi", new { id = video.Id }));
+            return response;
         }
 
         // DELETE: api/Videos/5

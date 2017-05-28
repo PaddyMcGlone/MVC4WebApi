@@ -7,6 +7,8 @@
 
 </div>
 
+<button id="createVideo">Create Video</button>
+
 <div id="videoEditOutput">
 </div>
 
@@ -66,6 +68,10 @@
                 return $.ajax(videoApiUrl + "/" + id);
             };
 
+
+            //Post
+            // Ajax( url string, The define the ajax settings - 
+            //in this instance post with data of type video)
             var putVideos = function(video) {
                 return $.ajax(videoApiUrl + "/" + video.Id,
                     {
@@ -74,13 +80,23 @@
                     });
             };
 
+            var addVideo = function(video) {
+                return $.ajax(videoApiUrl,
+                    {
+                        type: "POST",
+                        data: video
+
+                    });
+            }
+
             // Revealing module pattern - public object
             return {
                 getVideos: getVideos,
                 getVideo: getVideo,
-                putVideos: putVideos
+                putVideos: putVideos,
+                addVideo: addVideo
             };
-                
+
         }());
 
         (function() {
@@ -90,6 +106,7 @@
             quickly build some nice html using an almost placeholderr script, we then create this html in a buffer
             and output it onto the view. We then have some nice javascript listening for actions and reacting to this actions.
              */
+            //Handlebar.js
             var templates = {};
 
             var compiledTemplates = function() {
@@ -97,6 +114,7 @@
                 templates.videoEdit = Handlebars.compile($("#videoEdit").html());
             }
 
+            // Main methods
             var showAllVideos = function(data) {
                 var output = templates.videoTable({ video: data });
                 $("#videoTableOutput").html(output);
@@ -112,6 +130,15 @@
                 videoServer.getVideo(id).done(showVideoForEdit);
             }
 
+            //Create an empty objectc - pass to edit
+            //Edit then posts to addVideo - which passes to webAPi post method
+            var createVideo = function() {
+                var video = { Id: 0, Title: "", Length: 0 };
+                showVideoForEdit(video);
+            }
+
+
+            // Helper methods
             var refreshVideos = function() {
                 videoServer.getVideos().done(showAllVideos);
             }
@@ -134,6 +161,8 @@
                 var operation;
                 if (video.Id != "0") {
                     operation = videoServer.putVideos(video);
+                } else {
+                    operation = videoServer.addVideo(video);
                 }
                 operation.done(refreshVideos, clearEdit);
                 return false;
@@ -142,10 +171,10 @@
             var wireEvent = function() {
                 $(document).on("click", ".editVideo", editVideo);
                 $(document).on("click", "#saveVideo", saveVideo);
-
+                $(document).on("click", "#createVideo", createVideo);
             }
 
-            $(function () {
+            $(function() {
                 wireEvent();
                 compiledTemplates();
                 refreshVideos();
