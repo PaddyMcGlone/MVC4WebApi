@@ -89,15 +89,23 @@
                     });
             }
 
-            // Revealing module pattern - public object
-            return {
-                getVideos: getVideos,
-                getVideo: getVideo,
-                putVideos: putVideos,
-                addVideo: addVideo
+            var deleteVideo = function(id) {
+                return $.ajax(videoApiUrl + "/" + id,
+                    {
+                        type: "DELETE"
+                    });
             };
+        
+        // Revealing module pattern - public object
+        return {
+            getVideos: getVideos,
+            getVideo: getVideo,
+            putVideos: putVideos,
+            addVideo: addVideo,
+            deleteVideo: deleteVideo
+        };
 
-        }());
+    }());
 
         (function() {
             /*
@@ -128,6 +136,11 @@
             var editVideo = function() {
                 var id = getId(this);
                 videoServer.getVideo(id).done(showVideoForEdit);
+            }
+
+            var deleteVideo = function() {
+                var id = getId(this);
+                videoServer.deleteVideo(id).done(refreshVideos);
             }
 
             //Create an empty objectc - pass to edit
@@ -172,6 +185,7 @@
                 $(document).on("click", ".editVideo", editVideo);
                 $(document).on("click", "#saveVideo", saveVideo);
                 $(document).on("click", "#createVideo", createVideo);
+                $(document).on("click", ".deleteVideo", deleteVideo);
             }
 
             $(function() {
